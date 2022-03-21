@@ -1,0 +1,30 @@
+--perfect_attendance -
+--Find all employees that still qualify for the perfect attendance bonuses
+--Range: 1-1-2022 to Today
+--Work-In-Progress
+
+SELECT DISTINCT Hours.Badge_No
+FROM (
+  SELECT
+  EMP.Badge_No,
+  SUM(Clockin.Regular_Hours) AS Worked_Hours
+  
+  FROM Personnel_v_Clockin Clockin
+      JOIN Personnel_v_Employee EMP
+        ON Clockin.Plexus_User_No = EMP.Plexus_User_No
+      JOIN Personnel_v_Clockin_Type CT
+        ON Clockin.Clockin_Type_Key = CT.Clockin_Type_Key
+      JOIN Plexus_Control_v_Plexus_User PU
+        ON EMP.Plexus_User_No = PU.Plexus_User_No
+  
+  WHERE Clockin.Scheduled_In_Time BETWEEN '2022-01-01' AND GETDATE()
+  AND EMP.Badge_No > 0
+  AND CT.Paid = 1
+  AND DATENAME(dw, Clockin.Scheduled_In_Time) <> 'Saturday'
+  AND DATENAME(dw, Clockin.Scheduled_In_Time) <> 'Sunday'
+  
+  --To combine duplicate day
+  GROUP BY EMP.Badge_No, Scheduled_In_Time
+) AS Hours
+WHERE Hours.Worked_Hours < 8.0
+ORDER BY Hours.Badge_No;
