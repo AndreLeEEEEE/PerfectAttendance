@@ -1,10 +1,14 @@
 --perfect_attendance -
 --Find all employees that still qualify for the perfect attendance bonuses
+--This query finds all the IDs of people who aren't qualified and subtracts
+--them from the the group of all IDs, which should leave the IDs of those
+--who are qualified
 --Range: Entirety of 2021 and one or two quarters of 2021
 --Work-In-Progress
 ---No unexcused lates
 ---No unexcused absences -> no PTO and no Holiday on an unpaid day is an example
 ---Worked 8 hours Monday-Friday
+---Account for half days, somehow
 
 SELECT
 DISTINCT EMP.Badge_No,
@@ -38,8 +42,13 @@ AND EMP.Badge_No NOT IN (
     EMP.Badge_No,
     CAST(Clockin.Pay_Date AS DATE) AS Date,
     SUM(Clockin.Regular_Hours) AS Worked_Hours,
+    --Using an aggregate function allows GROUP BY to combine a person's split shifts due to lunch clocking based on the date
+    --Using MIN() in particular returns the morning clock in time, not the lunch clock in time
     MIN(Clockin.Scheduled_In_Time) AS Earliest_Scheduled_Clockin,
-    MIN(Clockin.System_Clockin_Time) AS Earliest_Actual_Clockin
+    MIN(Clockin.System_Clockin_Time) AS Earliest_Actual_Clockin,
+    --Passing Active to the next outer query returns 4 employees in the final results
+    MAX(PU.Active) AS Active,
+    MAX(Clockin.Late) AS Late
   
     FROM Personnel_v_Clockin Clockin
       JOIN Personnel_v_Employee EMP
@@ -51,14 +60,17 @@ AND EMP.Badge_No NOT IN (
     AND EMP.Badge_No > 0
     AND DATENAME(dw, Clockin.Pay_Date) <> 'Saturday'
     AND DATENAME(dw, Clockin.Pay_Date) <> 'Sunday'
-    --Apparently -1 means a person is active
-    AND PU.Active = -1
+    -- -1 may mean a person is active
+    --Using this line results in 141 employees being returned in the final results
+    --AND PU.Active = -1
     
     GROUP BY EMP.Badge_No, Clockin.Pay_Date
   ) AS Hours
   
   WHERE Hours.Worked_Hours < 8.0
-  OR DATEDIFF(MI, Hours.Earliest_Scheduled_Clockin, Hours.Earliest_Actual_Clockin) > 0
+  OR (DATEDIFF(MI, Hours.Earliest_Scheduled_Clockin, Hours.Earliest_Actual_Clockin) > 0
+    AND Hours.Late = 1)
+  OR Hours.Active = 0
 )
 
 ORDER BY EMP.Badge_No
