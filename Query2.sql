@@ -18,20 +18,24 @@ TT.Actual_In_Time,
 TT.Actual_Out_Time,
 TT.Scheduled_OT / 60.0 as Overtime,
 TT.Absent,
-CASE
+SUM(CASE
   WHEN DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) > 480.00 THEN
     ROUND((DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) - 30.0) / 60.0, 2) - TT.Regular_Hours
   ELSE
     ROUND(DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) / 60.0, 2) - TT.Regular_Hours
-END as Missing_Hours,
-TT.Late,
+END) as Missing_Hours,
+SUM(TT.Late_Minutes) as Late_Minutes,
+MAX(CASE
+  WHEN TT.Late_Minutes > 0 THEN 1
+  ELSE 0
+END) as Late,
 CASE
   WHEN DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) > 480.00 THEN
     ROUND((DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) - 30.0) / 60.0, 2)
   ELSE
     ROUND(DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) / 60.0, 2)
 END as Scheduled_Hours,
-TT.Regular_Hours as Actual_Hours,
+SUM(TT.Regular_Hours) as Actual_Hours,
 TT.Note
 FROM (
 	SELECT
@@ -64,8 +68,8 @@ FROM (
     CASE
       WHEN ISNULL(DATEDIFF(MI, Clockin.System_Clockout_Time, Clockin.Scheduled_Out_Time), 0) <= 0 THEN 0
       ELSE DATEDIFF(MI, Clockin.System_Clockout_Time, Clockin.Scheduled_Out_Time)
-    END AS 'Left_Early_Minutes', -- Need to fix
-    Clockin.Late,
+    END AS 'Left_Early_Minutes', -- Need to decide if this needs implementation
+    --Clockin.Late,
     Clockin.Regular_Hours,
     Clockin.Shift_Hours
   
@@ -92,5 +96,9 @@ FROM (
   AND DATENAME(dw, Clockin.Scheduled_In_Time) <> 'Sunday'
 ) AS TT
 
---Might need GROUP BY
+GROUP BY TT.Badge_No, TT.Full_Name, TT.Employee_Status,
+TT.Description, TT.Date, TT.Scheduled_In_Time,
+TT.Scheduled_Out_Time, TT.Scheduled_OT, TT.Actual_In_Time,
+TT.Actual_Out_Time, TT.Absent, TT.Note
+
 ORDER BY TT.Badge_No, CAST(DATEADD(HOUR, -2, TT.Scheduled_In_Time) as DATE);
