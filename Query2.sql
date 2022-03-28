@@ -3,6 +3,9 @@
 --for every employee
 --from 1/1/2022 to today.
 --Work-in-Progress
+---Take out all things related to tardiness
+---Use Clockin/out_Time instead of System_Clockin/out_Time
+---Actually combine split days, refer to query 'perfect_attendance' on how to achieve this
 
 SELECT
 TT.Badge_No,
@@ -14,8 +17,8 @@ TT.Scheduled_In_Time,
 TT.Scheduled_Out_Time,
 --Remove overtime hours from scheduled clock out time
 DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time) as Adjusted_Scheduled_Out_Time,
-TT.Actual_In_Time,
-TT.Actual_Out_Time,
+TT.Real_In_Time,
+TT.Real_Out_Time,
 SUM(CASE
   WHEN DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) > 480.00 THEN
     ROUND((DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) - 30.0) / 60.0, 2) - TT.Regular_Hours
@@ -31,7 +34,7 @@ FROM (
     PU.First_Name + ' ' + PU.Last_Name AS 'Full_Name',
     EMP.Employee_Status,
     CT.Description,
-    CAST(Clockin.Scheduled_In_Time as DATE) as Date,
+    CAST(Clockin.Pay_Date as DATE) as Date,
     CT.Absent,
     --Amount of hours to subtract from Scheduled_Out_Time to yield exactly 8 scheduled hours and 30 minutes for lunch if applicable
     --Negative number
@@ -46,8 +49,8 @@ FROM (
     --Convert from Eastern time to Mountain time
     DATEADD(HOUR, -2, Clockin.Scheduled_In_Time) as Scheduled_In_Time,
     DATEADD(HOUR, -2, Clockin.Scheduled_Out_Time) as Scheduled_Out_Time,
-    DATEADD(HOUR, -2, Clockin.System_Clockin_Time) as Actual_In_Time,
-    DATEADD(HOUR, -2, Clockin.System_Clockout_Time) as Actual_Out_Time,
+    DATEADD(HOUR, -2, Clockin.Clockin_Time) as Real_In_Time,
+    DATEADD(HOUR, -2, Clockin.Clockout_Time) as Real_Out_Time,
     Clockin.Note,
     Clockin.Regular_Hours,
     Clockin.Shift_Hours
@@ -64,7 +67,8 @@ FROM (
 	AND EMP.Badge_No > 0
 	AND (CT.Clockin_Type_Key = 393 --Suspended
 	OR CT.Clockin_Type_Key = 9722 --Unpaid
-	OR CT.Clockin_Type_Key = 386) --Work
+	OR CT.Clockin_Type_Key = 386 --Work
+	OR CT.Clockin_Type_Key = 387) --PTO
 	AND Clockin.Regular_Hours <
 	CASE WHEN Clockin.Shift_Hours > 8.00 THEN
 	  8.00
@@ -77,7 +81,7 @@ FROM (
 
 GROUP BY TT.Badge_No, TT.Full_Name, TT.Employee_Status,
 TT.Description, TT.Date, TT.Scheduled_In_Time,
-TT.Scheduled_Out_Time, TT.Scheduled_OT, TT.Actual_In_Time,
-TT.Actual_Out_Time, TT.Absent, TT.Note
+TT.Scheduled_Out_Time, TT.Scheduled_OT, TT.Real_In_Time,
+TT.Real_Out_Time,  TT.Note
 
 ORDER BY TT.Badge_No, CAST(DATEADD(HOUR, -2, TT.Scheduled_In_Time) as DATE);
