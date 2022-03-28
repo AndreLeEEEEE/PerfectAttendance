@@ -8,7 +8,6 @@
 ---No unexcused lates
 ---No unexcused absences -> no PTO and no Holiday on an unpaid day is an example
 ---Worked 8 hours Monday-Friday
----Account for half days, somehow
 
 SELECT
 DISTINCT EMP.Badge_No,
@@ -67,9 +66,14 @@ AND EMP.Badge_No NOT IN (
     GROUP BY EMP.Badge_No, Clockin.Pay_Date
   ) AS Hours
   
+  --Check if a person worked less than 8.0 hours (weekdays only)
   WHERE Hours.Worked_Hours < 8.0
+  --Check is a person had both a late clockin and a set late marker.
+  --If someone had a prrearranged clockin time that occurs after their
+  --scheduled clockin time but their late marker is 0, they fail this check
   OR (DATEDIFF(MI, Hours.Earliest_Scheduled_Clockin, Hours.Earliest_Actual_Clockin) > 0
     AND Hours.Late = 1)
+  --Check if a person is no longer working here
   OR Hours.Active = 0
 )
 
