@@ -25,8 +25,6 @@ FROM Personnel_v_Clockin Clockin
 WHERE Clockin.Pay_Date BETWEEN '2021-01-01' AND '2021-12-31'
 AND EMP.Badge_No > 0
 AND CT.Paid = 1
-AND DATENAME(dw, Clockin.Pay_Date) <> 'Saturday'
-AND DATENAME(dw, Clockin.Pay_Date) <> 'Sunday'
 --Filter out all employees that have at least one day of insufficient hours
 AND EMP.Badge_No NOT IN (
   --Find all employees that have at least one day of insufficient hours
