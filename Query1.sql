@@ -1,8 +1,9 @@
+--First query
 --"No punch recorded" query -
 --Finds all entries labeled as Scheduled (with no hours) or Absent-No Call
 --These labels are indicators to HR that they need to investigate these days
 --to determine what they really were.
---Work-In-Progress
+--Range: Supposed to be set by user
 
 SELECT
 TT.Badge_No,
@@ -53,6 +54,14 @@ FROM (
     AND DATENAME(dw, Clockin.Scheduled_In_Time) <> 'Saturday'
     AND DATENAME(dw, Clockin.Scheduled_In_Time) <> 'Sunday'
 ) AS TT
+
+--Utilizes parameters
+--ISNULL means the field can be empty
+--% means find anything that's like the parameter
+WHERE (TT.Scheduled_In_Time >= @Start_Date or @Start_Date is NULL)
+  AND (TT.Scheduled_In_Time <= @End_Date or @End_Date is NULL)
+  AND (ISNULL(TT.Employee_Name, '') LIKE @Employee_Name + '%')
+  AND (ISNULL(TT.Badge_No, '') LIKE @Employee_No + '%')
 
 GROUP BY TT.Badge_No, TT.Employee_Name, TT.Description, TT.Date, TT.Scheduled_In_Time, TT.Scheduled_Out_Time, TT.Scheduled_OT
 ORDER BY TT.Badge_No
