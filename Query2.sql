@@ -1,11 +1,9 @@
+--Second Query
 --"attendance_records" query -
 --Find all days with missing full-time hours.
 --for every employee
 --from 1/1/2022 to today.
---Work-in-Progress
----Take out all things related to tardiness
----Use Clockin/out_Time instead of System_Clockin/out_Time
----Actually combine split days, refer to query 'perfect_attendance' on how to achieve this
+--Range: Supposed to be set by user
 
 SELECT
 Hours.Badge_No,
@@ -34,7 +32,7 @@ FROM (
     JOIN Plexus_Control_v_Plexus_User PU
       ON EMP.Plexus_User_No = PU.Plexus_User_No
     
-  WHERE Clockin.Pay_Date BETWEEN '2022-01-01' AND GETDATE()
+  WHERE Clockin.Pay_Date BETWEEN '2021-01-01' AND '2021-12-31'
   AND EMP.Badge_No > 0
   AND DATENAME(dw, Clockin.Pay_Date) <> 'Saturday'
   AND DATENAME(dw, Clockin.Pay_Date) <> 'Sunday'
