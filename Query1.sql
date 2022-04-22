@@ -9,7 +9,7 @@ SELECT
 TT.Badge_No,
 TT.Employee_Name,
 TT.Description,
-TT.Date,
+TT.Date2,
 CASE
   WHEN DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) > 480.00 THEN
     ROUND((DATEDIFF(MI, TT.Scheduled_In_Time, DATEADD(MI, TT.Scheduled_OT, TT.Scheduled_Out_Time)) - 30.0) / 60.0, 2)
@@ -23,7 +23,7 @@ FROM (
   EMP.Badge_No,
   PU.First_Name + ' ' + PU.Last_Name AS 'Employee_Name',
   CT.Description,
-  CAST(Clockin.Scheduled_In_Time AS DATE) AS Date,
+  CONVERT(VARCHAR, Clockin.Scheduled_In_Time, 1) AS Date2,
   Clockin.Regular_Hours,
   Clockin.Overtime_Hours,
   Clockin.Doubletime_Hours,
@@ -63,5 +63,5 @@ WHERE (TT.Scheduled_In_Time >= @Start_Date or @Start_Date is NULL)
   AND (ISNULL(TT.Employee_Name, '') LIKE @Employee_Name + '%')
   AND (ISNULL(TT.Badge_No, '') LIKE @Employee_No + '%')
 
-GROUP BY TT.Badge_No, TT.Employee_Name, TT.Description, TT.Date, TT.Scheduled_In_Time, TT.Scheduled_Out_Time, TT.Scheduled_OT
+GROUP BY TT.Badge_No, TT.Employee_Name, TT.Description, TT.Date2, TT.Scheduled_In_Time, TT.Scheduled_Out_Time, TT.Scheduled_OT
 ORDER BY TT.Badge_No
