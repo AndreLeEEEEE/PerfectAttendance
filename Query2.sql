@@ -8,7 +8,7 @@
 SELECT
 Hours.Badge_No,
 Hours.Name,
-Hours.Date,
+Hours.Date2,
 Hours.Worked_Hours,
 CASE
   WHEN 8.0 - Hours.Worked_Hours > 0 THEN
@@ -21,7 +21,7 @@ FROM (
   SELECT
   EMP.Badge_No,
   PU.First_Name + ' ' + PU.Last_Name AS Name,
-  CAST(Clockin.Pay_Date AS DATE) AS Date,
+  CONVERT(VARCHAR, Clockin.Pay_Date, 1) AS Date2,
   SUM(Clockin.Regular_Hours) as Worked_Hours
   
   FROM Personnel_v_Clockin Clockin
