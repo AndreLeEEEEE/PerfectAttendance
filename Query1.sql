@@ -48,7 +48,8 @@ FROM (
     JOIN Plexus_Control_v_Plexus_User PU
       ON EMP.Plexus_User_No = PU.Plexus_User_No
 
-  WHERE Clockin.Scheduled_In_Time BETWEEN '2022-01-01' AND GETDATE()
+  WHERE (Clockin.Scheduled_In_Time >= @Start_Date or @Start_Date is NULL)
+    AND (Clockin.Scheduled_In_Time <= @End_Date or @End_Date is NULL)
     AND (Clockin.Clockin_Type_Key = 388
         OR Clockin.Clockin_Type_Key = 394)
     AND DATENAME(dw, Clockin.Scheduled_In_Time) <> 'Saturday'
@@ -58,10 +59,9 @@ FROM (
 --Utilizes parameters
 --ISNULL means the field can be empty
 --% means find anything that's like the parameter
-WHERE (TT.Scheduled_In_Time >= @Start_Date or @Start_Date is NULL)
-  AND (TT.Scheduled_In_Time <= @End_Date or @End_Date is NULL)
-  AND (ISNULL(TT.Employee_Name, '') LIKE @Employee_Name + '%')
+WHERE (ISNULL(TT.Employee_Name, '') LIKE @Employee_Name + '%')
   AND (ISNULL(TT.Badge_No, '') LIKE @Employee_No + '%')
+  AND TT.Badge_No > 0
 
 GROUP BY TT.Badge_No, TT.Employee_Name, TT.Description, TT.Date2, TT.Scheduled_In_Time, TT.Scheduled_Out_Time, TT.Scheduled_OT
 ORDER BY TT.Badge_No
