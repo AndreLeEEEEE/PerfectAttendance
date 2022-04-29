@@ -24,8 +24,8 @@ FROM Personnel_v_Clockin Clockin
 
 WHERE (Clockin.Pay_Date >= @Start_Date or @Start_Date is NULL)
 AND (Clockin.Pay_Date <= @End_Date or @End_Date is NULL)
-AND (ISNULL(TA.Full_Name, '') LIKE @Employee_Name + '%')
-AND (ISNULL(TA.Badge_No, '') LIKE @Employee_No + '%')
+AND (ISNULL(PU.First_Name + ' ' + PU.Last_Name, '') LIKE @Employee_Name + '%')
+AND (ISNULL(EMP.Badge_No, '') LIKE @Employee_No + '%')
 AND EMP.Badge_No > 0
 AND CT.Paid = 1
 --Filter out all employees that have at least one day of insufficient hours
