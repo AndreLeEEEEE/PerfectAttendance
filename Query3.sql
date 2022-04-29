@@ -22,7 +22,10 @@ FROM Personnel_v_Clockin Clockin
 	  ON EMP.Plexus_User_No = PU.Plexus_User_No
 
 
-WHERE Clockin.Pay_Date BETWEEN '2021-01-01' AND '2021-12-31'
+WHERE (Clockin.Pay_Date >= @Start_Date or @Start_Date is NULL)
+AND (Clockin.Pay_Date <= @End_Date or @End_Date is NULL)
+AND (ISNULL(TA.Full_Name, '') LIKE @Employee_Name + '%')
+AND (ISNULL(TA.Badge_No, '') LIKE @Employee_No + '%')
 AND EMP.Badge_No > 0
 AND CT.Paid = 1
 --Filter out all employees that have at least one day of insufficient hours
