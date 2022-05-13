@@ -4,10 +4,6 @@
 --them from the the group of all IDs, which should leave the IDs of those
 --who are qualified
 --Range: Entirety of 2021 and one or two quarters of 2021
---Work-In-Progress
----No unexcused lates
----No unexcused absences -> no PTO and no Holiday on an unpaid day is an example
----Worked 8 hours Monday-Friday
 
 SELECT
 DISTINCT EMP.Badge_No,
@@ -20,7 +16,6 @@ FROM Personnel_v_Clockin Clockin
     ON Clockin.Clockin_Type_Key = CT.Clockin_Type_Key
   JOIN Plexus_Control_v_Plexus_User PU
 	  ON EMP.Plexus_User_No = PU.Plexus_User_No
-
 
 WHERE (Clockin.Pay_Date >= @Start_Date or @Start_Date is NULL)
 AND (Clockin.Pay_Date <= @End_Date or @End_Date is NULL)
