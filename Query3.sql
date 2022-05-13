@@ -1,9 +1,13 @@
---perfect_attendance -
+--perfecto_attendance -
 --Find all employees that still qualify for the perfect attendance bonuses
 --This query finds all the IDs of people who aren't qualified and subtracts
 --them from the the group of all IDs, which should leave the IDs of those
 --who are qualified
---Range: Set by user
+--Range: Entirety of 2021 and one or two quarters of 2021
+--Work-In-Progress
+---No unexcused lates
+---No unexcused absences -> no PTO and no Holiday on an unpaid day is an example
+---Worked 8 hours Monday-Friday
 
 SELECT
 DISTINCT EMP.Badge_No,
@@ -52,7 +56,7 @@ AND EMP.Badge_No NOT IN (
       JOIN Plexus_Control_v_Plexus_User PU
 	      ON EMP.Plexus_User_No = PU.Plexus_User_No
     
-    WHERE Clockin.Pay_Date BETWEEN '2021-01-01' AND '2021-12-31'
+    WHERE Clockin.Pay_Date BETWEEN @Start_Date AND @End_Date
     AND EMP.Badge_No > 0
     AND DATENAME(dw, Clockin.Pay_Date) <> 'Saturday'
     AND DATENAME(dw, Clockin.Pay_Date) <> 'Sunday'
