@@ -3,7 +3,7 @@
 --This query finds all the IDs of people who aren't qualified and subtracts
 --them from the the group of all IDs, which should leave the IDs of those
 --who are qualified
---Range: Entirety of 2021 and one or two quarters of 2021
+--Range: Selected by user
 
 SELECT
 DISTINCT EMP.Badge_No,
